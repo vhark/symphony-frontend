@@ -1,4 +1,14 @@
 import { NextResponse } from "next/server"
+import { fetchTable } from "@/lib/nocodb"
+
+interface NocoProject {
+  Id: number
+  Name: string
+  Status: string
+  Track: string
+  Progress: number
+  Owner: string
+}
 
 const mockProjects = [
   { id: 1, name: "Symphony Cockpit", status: "active", track: "build", progress: 45, owner: "Engineering" },
@@ -8,5 +18,19 @@ const mockProjects = [
 ]
 
 export async function GET() {
-  return NextResponse.json({ projects: mockProjects })
+  try {
+    const rows = await fetchTable<NocoProject>("m1wj32l3k95m4mh")
+    const projects = rows.map((r) => ({
+      id: r.Id,
+      name: r.Name ?? "",
+      status: (r.Status ?? "").toLowerCase().replace(/\s+/g, "-"),
+      track: (r.Track ?? "").toLowerCase(),
+      progress: r.Progress ?? 0,
+      owner: r.Owner ?? "",
+    }))
+    return NextResponse.json({ projects })
+  } catch (e) {
+    console.error("Projects API error, falling back to mock:", e)
+    return NextResponse.json({ projects: mockProjects })
+  }
 }

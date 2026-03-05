@@ -1,18 +1,8 @@
+"use client"
+
 import { Badge } from "@/components/ui/badge"
-
-const mockRocks = [
-  { id: 1, title: "Launch Cockpit MVP", status: "on-track", progress: 65 },
-  { id: 2, title: "100 Qualified Leads", status: "at-risk", progress: 32 },
-  { id: 3, title: "Agent Framework v2", status: "on-track", progress: 80 },
-  { id: 4, title: "SOC2 Compliance", status: "off-track", progress: 15 },
-]
-
-const mockScorecard = [
-  { label: "Revenue", value: "$42.8k", target: "$50k", trend: "up" },
-  { label: "Active Agents", value: "12", target: "15", trend: "up" },
-  { label: "Build Velocity", value: "34 pts", target: "40", trend: "down" },
-  { label: "CSAT", value: "4.7", target: "4.5", trend: "up" },
-]
+import { useRocks } from "@/hooks/use-rocks"
+import { useScorecard } from "@/hooks/use-scorecard"
 
 function statusColor(status: string) {
   switch (status) {
@@ -40,29 +30,53 @@ function trendColor(trend: string) {
   return trend === "up" ? "text-status-active" : trend === "down" ? "text-status-error" : "text-text-muted"
 }
 
+function formatValue(value: number, label: string): string {
+  const l = label.toLowerCase()
+  if (l.includes("revenue") || l.includes("arr") || l.includes("mrr")) {
+    return value >= 1000 ? `$${(value / 1000).toFixed(1)}k` : `$${value}`
+  }
+  if (l.includes("velocity")) return `${value} pts`
+  return String(value)
+}
+
+function formatTarget(target: number, label: string): string {
+  const l = label.toLowerCase()
+  if (l.includes("revenue") || l.includes("arr") || l.includes("mrr")) {
+    return target >= 1000 ? `$${(target / 1000).toFixed(0)}k` : `$${target}`
+  }
+  return String(target)
+}
+
 export function RocksBar() {
+  const { rocks, isLoading: rocksLoading } = useRocks()
+  const { scorecard, isLoading: scorecardLoading } = useScorecard()
+
   return (
     <div className="sticky top-0 z-40 border-b border-border bg-[#080808]/95 backdrop-blur-md">
       <div className="flex items-center gap-6 px-6 py-3">
         {/* Rocks */}
         <div className="flex items-center gap-2">
           <span className="text-label text-text-muted mr-2">ROCKS</span>
-          {mockRocks.map((rock) => (
-            <div
-              key={rock.id}
-              className="group flex items-center gap-2.5 rounded-[12px] border border-border bg-surface px-3 py-2 transition-colors hover:bg-surface-hover hover:border-border-strong cursor-pointer"
-            >
-              <span className="text-meta text-text-primary font-medium max-w-[120px] truncate">
-                {rock.title}
-              </span>
-              <Badge
-                variant="outline"
-                className={`text-[10px] px-1.5 py-0 h-5 border ${statusColor(rock.status)}`}
+          {rocksLoading ? (
+            <span className="text-meta text-text-muted">Loading...</span>
+          ) : (
+            rocks.map((rock) => (
+              <div
+                key={rock.id}
+                className="group flex items-center gap-2.5 rounded-[12px] border border-border bg-surface px-3 py-2 transition-colors hover:bg-surface-hover hover:border-border-strong cursor-pointer"
               >
-                {statusLabel(rock.status)}
-              </Badge>
-            </div>
-          ))}
+                <span className="text-meta text-text-primary font-medium max-w-[120px] truncate">
+                  {rock.title}
+                </span>
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] px-1.5 py-0 h-5 border ${statusColor(rock.status)}`}
+                >
+                  {statusLabel(rock.status)}
+                </Badge>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Divider */}
@@ -70,20 +84,24 @@ export function RocksBar() {
 
         {/* Scorecard */}
         <div className="flex items-center gap-4 ml-auto">
-          {mockScorecard.map((metric) => (
-            <div key={metric.label} className="flex flex-col items-center gap-0.5 min-w-[72px]">
-              <span className="text-label text-text-muted">{metric.label}</span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-card-title text-text-primary font-mono">
-                  {metric.value}
-                </span>
-                <span className={`text-xs font-medium ${trendColor(metric.trend)}`}>
-                  {trendIcon(metric.trend)}
-                </span>
+          {scorecardLoading ? (
+            <span className="text-meta text-text-muted">Loading...</span>
+          ) : (
+            scorecard.map((metric) => (
+              <div key={metric.id ?? metric.label} className="flex flex-col items-center gap-0.5 min-w-[72px]">
+                <span className="text-label text-text-muted">{metric.label}</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-card-title text-text-primary font-mono">
+                    {formatValue(metric.value, metric.label)}
+                  </span>
+                  <span className={`text-xs font-medium ${trendColor(metric.trend)}`}>
+                    {trendIcon(metric.trend)}
+                  </span>
+                </div>
+                <span className="text-[10px] text-text-muted">/ {formatTarget(metric.target, metric.label)}</span>
               </div>
-              <span className="text-[10px] text-text-muted">/ {metric.target}</span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
