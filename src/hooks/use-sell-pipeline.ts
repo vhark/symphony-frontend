@@ -9,6 +9,12 @@ export interface SellDeal {
   probability: number
   company?: string
   owner?: string
+  icpMatch?: string
+  budgetConfirmed?: boolean
+  timeline?: string
+  daysInStage?: number
+  leadSource?: string
+  notes?: string
 }
 
 export function useSellPipeline() {

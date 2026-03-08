@@ -1,6 +1,7 @@
 import { RocksBar } from "@/components/mission-control/rocks-bar"
 import { AttentionSurface } from "@/components/mission-control/attention-surface"
 import { AgentFeed } from "@/components/mission-control/agent-feed"
+import { ActivityStream } from "@/components/mission-control/activity-stream"
 import { BuildSellTracks } from "@/components/mission-control/build-sell-tracks"
 
 export default function MissionControl() {
@@ -20,8 +21,11 @@ export default function MissionControl() {
           <BuildSellTracks />
         </div>
 
-        {/* Right column — Zone 3: Agent Feed */}
-        <AgentFeed />
+        {/* Right column — Agent Feed + Activity Stream */}
+        <div className="flex flex-col gap-6">
+          <AgentFeed />
+          <ActivityStream />
+        </div>
       </div>
     </div>
   )

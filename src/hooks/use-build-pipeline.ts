@@ -9,6 +9,10 @@ export interface BuildProject {
   dueDate: string
   priority: string
   stage?: string
+  type?: string
+  complexity?: string
+  impactScore?: number
+  notes?: string
 }
 
 export function useBuildPipeline() {
