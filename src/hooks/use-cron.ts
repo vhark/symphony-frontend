@@ -8,8 +8,10 @@ export interface CronJob {
   timezone: string
   kind: string
   status: string
-  lastRun?: string
-  nextRun?: string
+  lastRunAt?: string | null
+  nextRunAt?: string | null
+  lastStatus?: string | null
+  lastDurationMs?: number | null
 }
 
 export function useCron() {

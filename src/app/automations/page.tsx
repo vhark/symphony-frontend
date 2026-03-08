@@ -4,7 +4,9 @@ import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useCron, type CronJob } from "@/hooks/use-cron"
 
-function humanCron(expr: string): string {
+function humanCron(expr: string | undefined | null): string {
+  if (!expr || typeof expr !== "string") return "—"
+  if (expr.startsWith("once:")) return `One-time: ${new Date(expr.slice(5)).toLocaleString()}`
   const parts = expr.split(" ")
   if (parts.length !== 5) return expr
 
