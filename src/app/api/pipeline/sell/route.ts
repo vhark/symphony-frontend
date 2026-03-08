@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server"
-import { fetchTable } from "@/lib/nocodb"
+import { NextResponse, NextRequest } from "next/server"
+import { fetchTable, createRecord } from "@/lib/nocodb"
 
 interface NocoSell {
   Id: number
@@ -9,8 +9,9 @@ interface NocoSell {
   Status: string
   Owner: string
   "Deal Value": number
-  "ICP Match": string
+  "ICP Match": boolean
   "Budget Confirmed": boolean
+  "Decision Maker Identified": boolean
   Timeline: string
   "Days in Stage": number
   "Lead Source": string
@@ -42,8 +43,9 @@ export async function GET() {
       stage: r.Stage ?? "",
       probability: stageToProbability(r.Stage),
       owner: r.Owner ?? "",
-      icpMatch: r["ICP Match"] ?? "",
-      budgetConfirmed: r["Budget Confirmed"] ?? false,
+      icpMatch: !!r["ICP Match"],
+      budgetConfirmed: !!r["Budget Confirmed"],
+      decisionMakerIdentified: !!r["Decision Maker Identified"],
       timeline: r.Timeline ?? "",
       daysInStage: r["Days in Stage"] ?? 0,
       leadSource: r["Lead Source"] ?? "",
@@ -53,5 +55,18 @@ export async function GET() {
   } catch (e) {
     console.error("Sell pipeline API error, falling back to mock:", e)
     return NextResponse.json({ deals: mockSellPipeline })
+  }
+}
+
+const SELL_TABLE = "md91oklmw9u9ua6"
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const record = await createRecord<NocoSell>(SELL_TABLE, body)
+    return NextResponse.json(record, { status: 201 })
+  } catch (e) {
+    console.error("Sell create error:", e)
+    return NextResponse.json({ error: "Failed to create record" }, { status: 500 })
   }
 }

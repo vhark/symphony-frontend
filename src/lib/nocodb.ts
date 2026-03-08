@@ -60,3 +60,75 @@ export async function fetchTable<T = Record<string, unknown>>(
   const data: NocoDBResponse<T> = await res.json()
   return data.list
 }
+
+export async function createRecord<T = Record<string, unknown>>(
+  tableId: string,
+  data: Record<string, unknown>
+): Promise<T> {
+  if (!NOCODB_URL || !NOCODB_TOKEN || !NOCODB_EOS_BASE) {
+    throw new Error("NocoDB env vars not configured")
+  }
+
+  const url = `${NOCODB_URL}/api/v1/db/data/noco/${NOCODB_EOS_BASE}/${tableId}`
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "xc-token": NOCODB_TOKEN,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!res.ok) {
+    throw new Error(`NocoDB create error ${res.status}: ${res.statusText}`)
+  }
+
+  return res.json() as Promise<T>
+}
+
+export async function updateRecord<T = Record<string, unknown>>(
+  tableId: string,
+  id: number,
+  data: Record<string, unknown>
+): Promise<T> {
+  if (!NOCODB_URL || !NOCODB_TOKEN || !NOCODB_EOS_BASE) {
+    throw new Error("NocoDB env vars not configured")
+  }
+
+  const url = `${NOCODB_URL}/api/v1/db/data/noco/${NOCODB_EOS_BASE}/${tableId}`
+  const res = await fetch(url, {
+    method: "PATCH",
+    headers: {
+      "xc-token": NOCODB_TOKEN,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ Id: id, ...data }),
+  })
+
+  if (!res.ok) {
+    throw new Error(`NocoDB update error ${res.status}: ${res.statusText}`)
+  }
+
+  return res.json() as Promise<T>
+}
+
+export async function deleteRecord(
+  tableId: string,
+  id: number
+): Promise<void> {
+  if (!NOCODB_URL || !NOCODB_TOKEN || !NOCODB_EOS_BASE) {
+    throw new Error("NocoDB env vars not configured")
+  }
+
+  const url = `${NOCODB_URL}/api/v1/db/data/noco/${NOCODB_EOS_BASE}/${tableId}/${id}`
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "xc-token": NOCODB_TOKEN,
+    },
+  })
+
+  if (!res.ok) {
+    throw new Error(`NocoDB delete error ${res.status}: ${res.statusText}`)
+  }
+}

@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server"
-import { fetchTable } from "@/lib/nocodb"
+import { NextResponse, NextRequest } from "next/server"
+import { fetchTable, createRecord } from "@/lib/nocodb"
 
 interface NocoBuild {
   Id: number
@@ -14,6 +14,7 @@ interface NocoBuild {
   "Linked Sell Stage": string
   "Target Release Date": string
   Notes: string
+  "Customer Requested": boolean
 }
 
 const mockBuildPipeline = [
@@ -45,10 +46,24 @@ export async function GET() {
       complexity: r.Complexity ?? "",
       impactScore: r["Impact Score"] ?? 0,
       notes: r.Notes ?? "",
+      customerRequested: r["Customer Requested"] ?? false,
     }))
     return NextResponse.json({ projects })
   } catch (e) {
     console.error("Build pipeline API error, falling back to mock:", e)
     return NextResponse.json({ projects: mockBuildPipeline })
+  }
+}
+
+const BUILD_TABLE = "mm3e7zzulgzj0fb"
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const record = await createRecord<NocoBuild>(BUILD_TABLE, body)
+    return NextResponse.json(record, { status: 201 })
+  } catch (e) {
+    console.error("Build create error:", e)
+    return NextResponse.json({ error: "Failed to create record" }, { status: 500 })
   }
 }
