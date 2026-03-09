@@ -363,11 +363,11 @@ export default function ContentPage() {
       {isLoading ? (
         <div className="py-20 text-center text-meta text-text-muted">Loading content queue...</div>
       ) : (
-        <div className="grid grid-cols-3 gap-4 flex-1 min-h-0">
+        <div className="flex gap-4 flex-1 min-h-0 overflow-x-auto pb-2 -mx-6 px-6">
           {COLUMNS.map(col => {
             const colItems = getColumnItems(col)
             return (
-              <div key={col.id} className="flex flex-col min-h-0">
+              <div key={col.id} className="flex flex-col min-h-0 min-w-[300px] w-[300px] shrink-0">
                 {/* Column header */}
                 <div className={`mb-3 flex items-center gap-2 px-1`}>
                   <span className="text-base">{col.emoji}</span>
