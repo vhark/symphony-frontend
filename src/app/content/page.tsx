@@ -178,6 +178,7 @@ function EditSheet({
   const set = (k: keyof ContentItem, v: unknown) => setForm(f => ({ ...f, [k]: v }))
 
   async function handleSave() {
+    if (!item) return
     setSaving(true)
     await onSave(item.id, {
       Title: form.title,
@@ -193,6 +194,7 @@ function EditSheet({
   }
 
   async function handleDelete() {
+    if (!item) return
     if (!confirmDelete) { setConfirmDelete(true); return }
     setDeleting(true)
     await onDelete(item.id)
