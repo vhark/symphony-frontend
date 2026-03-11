@@ -18,6 +18,7 @@ const navItems = [
   { href: "/sell", label: "Sell Pipeline", icon: "💰" },
   { href: "/issues", label: "Issues", icon: "🎫" },
   { href: "/content", label: "Content Queue", icon: "📝" },
+  { href: "/systems", label: "Systems", icon: "🗺️" },
   { href: "/settings", label: "Settings", icon: "⚙️" },
 ]
 
