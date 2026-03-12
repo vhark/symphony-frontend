@@ -10,7 +10,7 @@ import {
   type Edge,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
-import { SystemNode, StageNode, HubNode, MetricNode } from "./custom-nodes"
+import { SystemNode, StageNode, HubNode, MetricNode, AgentNode } from "./custom-nodes"
 import { DataFlowEdge, DelegationEdge } from "./custom-edges"
 
 const nodeTypes = {
@@ -18,6 +18,7 @@ const nodeTypes = {
   stage: StageNode,
   hub: HubNode,
   metric: MetricNode,
+  agent: AgentNode,
 }
 
 const edgeTypes = {

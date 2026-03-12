@@ -113,3 +113,95 @@ export function MetricNode({ data }: NodeProps<Node<MetricNodeData>>) {
     </div>
   )
 }
+
+/* ---------- AgentNode (premium card for ecosystem diagram) ---------- */
+type AgentNodeData = {
+  emoji: string
+  name: string
+  role: string
+  tier: "hub" | "tier1" | "tier2"
+  status?: "green" | "amber" | "red" | "gray"
+  model?: string
+}
+
+const tierStyles = {
+  hub: {
+    wrapper: "min-w-[180px] border-2 border-[#7c3aed] bg-gradient-to-b from-[#1a1030] to-[#111] shadow-[0_0_40px_rgba(124,58,237,0.25)]",
+    emoji: "text-4xl",
+    name: "text-[16px]",
+    glow: true,
+  },
+  tier1: {
+    wrapper: "min-w-[150px] border border-[#7c3aed]/40 bg-gradient-to-b from-[#161122] to-[#0e0e0e]",
+    emoji: "text-2xl",
+    name: "text-[13px]",
+    glow: false,
+  },
+  tier2: {
+    wrapper: "min-w-[130px] border border-[#2a2a2a] bg-[#0e0e0e]",
+    emoji: "text-xl",
+    name: "text-[12px]",
+    glow: false,
+  },
+}
+
+const statusGlow: Record<string, string> = {
+  green: "shadow-[0_0_8px_rgba(34,197,94,0.4)]",
+  amber: "shadow-[0_0_8px_rgba(245,158,11,0.4)]",
+  red: "shadow-[0_0_8px_rgba(239,68,68,0.4)]",
+  gray: "",
+}
+
+const statusBorder: Record<string, string> = {
+  green: "border-green-500",
+  amber: "border-amber-500",
+  red: "border-red-500",
+  gray: "border-gray-600",
+}
+
+const statusBg: Record<string, string> = {
+  green: "bg-green-500",
+  amber: "bg-amber-500",
+  red: "bg-red-500",
+  gray: "bg-gray-600",
+}
+
+export function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
+  const style = tierStyles[data.tier]
+  const status = data.status || "gray"
+
+  return (
+    <div
+      className={`relative rounded-2xl p-4 text-center transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_32px_rgba(124,58,237,0.3)] ${style.wrapper}`}
+    >
+      <Handle type="target" position={Position.Top} className="!bg-[#7c3aed] !border-[#080808] !w-2.5 !h-2.5 !-top-1" />
+      <Handle type="source" position={Position.Bottom} className="!bg-[#7c3aed] !border-[#080808] !w-2.5 !h-2.5 !-bottom-1" />
+
+      {/* Status ring around emoji */}
+      <div className="flex justify-center mb-2">
+        <div className={`rounded-full border-2 p-2 ${statusBorder[status]} ${statusGlow[status]}`}>
+          <span className={style.emoji}>{data.emoji}</span>
+        </div>
+      </div>
+
+      {/* Name */}
+      <div className={`font-bold text-white ${style.name}`}>{data.name}</div>
+
+      {/* Role badge */}
+      <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-[#1a1a1a] px-2.5 py-0.5">
+        <span className={`h-1.5 w-1.5 rounded-full ${statusBg[status]}`} />
+        <span className="text-[10px] font-medium text-gray-300">{data.role}</span>
+      </div>
+
+      {/* Model chip (hub + tier1 only) */}
+      {data.model && data.tier !== "tier2" && (
+        <div className="mt-1.5 text-[9px] text-gray-500 font-mono">{data.model}</div>
+      )}
+
+      {/* Subtle pulse for hub */}
+      {style.glow && (
+        <div className="absolute inset-0 rounded-2xl animate-pulse opacity-10 border-2 border-[#7c3aed] pointer-events-none" />
+      )}
+    </div>
+  )
+}

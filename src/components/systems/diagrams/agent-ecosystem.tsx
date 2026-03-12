@@ -4,49 +4,49 @@ import type { Node, Edge } from "@xyflow/react"
 import { useAgents, type Agent } from "@/hooks/use-agents"
 import { FlowCanvas } from "../flow-canvas"
 
-/* ── Org chart: Nova top → Tier 1 row → Tier 2 grouped under managers ── */
+/* ── Premium org chart with AgentNode cards ── */
 
-const NODE_W = 170
-const NODE_PAD = 30 // gap between Tier 2 nodes within a group
-const GROUP_PAD = 60 // gap between Tier 1 columns
-const ROW_GAP = 180
+const NODE_W = 160
+const NODE_PAD = 30
+const GROUP_PAD = 70
+const ROW_GAP = 200
 
 const TIER1 = [
-  { slug: "pm", name: "Atlas", emoji: "🦅", role: "PM" },
-  { slug: "cto", name: "Axiom", emoji: "🐉", role: "CTO" },
-  { slug: "coach", name: "Titan", emoji: "🔥", role: "Coach" },
-  { slug: "sales", name: "Rex", emoji: "🐺", role: "Sales" },
-  { slug: "cmo", name: "Maven", emoji: "🦚", role: "CMO" },
-  { slug: "cpo", name: "Forge", emoji: "🔥", role: "CPO" },
-  { slug: "finance", name: "Vector", emoji: "📈", role: "CFO" },
+  { slug: "pm", name: "Atlas", emoji: "🦅", role: "Project Manager" },
+  { slug: "cto", name: "Axiom", emoji: "🐉", role: "Chief Technology Officer" },
+  { slug: "coach", name: "Titan", emoji: "🔥", role: "Executive Coach" },
+  { slug: "sales", name: "Rex", emoji: "🐺", role: "Head of Sales" },
+  { slug: "cmo", name: "Maven", emoji: "🦚", role: "Chief Marketing Officer" },
+  { slug: "cpo", name: "Forge", emoji: "🔥", role: "Chief Product Officer" },
+  { slug: "finance", name: "Vector", emoji: "📈", role: "Chief Financial Officer" },
 ]
 
 const TIER2_GROUPS: Record<string, { slug: string; name: string; emoji: string; role: string }[]> = {
   pm: [
-    { slug: "km", name: "Scribe", emoji: "🦊", role: "KM" },
+    { slug: "km", name: "Scribe", emoji: "🦊", role: "Knowledge Manager" },
   ],
   cto: [
-    { slug: "coder", name: "Anvil", emoji: "🛠️", role: "Coder" },
-    { slug: "cartographer", name: "Vega", emoji: "🗺️", role: "Diagrams" },
-    { slug: "sentinel", name: "Sentinel", emoji: "👁️", role: "Intel" },
+    { slug: "coder", name: "Anvil", emoji: "🛠️", role: "Engineer" },
+    { slug: "cartographer", name: "Vega", emoji: "🗺️", role: "Systems Diagrams" },
+    { slug: "sentinel", name: "Sentinel", emoji: "👁️", role: "Intelligence" },
   ],
   coach: [
     { slug: "crux", name: "Crux", emoji: "📊", role: "Analysis" },
-    { slug: "research", name: "Sage", emoji: "🔬", role: "Research" },
+    { slug: "research", name: "Sage", emoji: "🔬", role: "Deep Research" },
   ],
   sales: [
     { slug: "sourcing", name: "Scout", emoji: "🔍", role: "Sourcing" },
   ],
   cmo: [
-    { slug: "content", name: "Pixel", emoji: "🎬", role: "Content" },
-    { slug: "comms", name: "Echo", emoji: "🦜", role: "Comms" },
+    { slug: "content", name: "Pixel", emoji: "🎬", role: "Content Creator" },
+    { slug: "comms", name: "Echo", emoji: "🦜", role: "Communications" },
   ],
   cpo: [
-    { slug: "kimi", name: "Kimi", emoji: "🌙", role: "Visual" },
-    { slug: "volt", name: "Volt", emoji: "🐙", role: "CEA" },
+    { slug: "kimi", name: "Kimi", emoji: "🌙", role: "Visual Design" },
+    { slug: "volt", name: "Volt", emoji: "🐙", role: "CEA Controls" },
   ],
   finance: [
-    { slug: "investor", name: "Oracle", emoji: "🔮", role: "Investor" },
+    { slug: "investor", name: "Oracle", emoji: "🔮", role: "Investment Strategy" },
   ],
 }
 
@@ -59,46 +59,57 @@ export function AgentEcosystemDiagram() {
     return match.status === "active" ? "green" : match.status === "warning" ? "amber" : "gray"
   }
 
-  // Calculate column width for each Tier 1 agent based on how many reports they have
+  const getModel = (slug: string): string | undefined => {
+    const match = agents.find((a: Agent) => a.slug === slug || a.name?.toLowerCase() === slug)
+    return match?.model
+  }
+
+  // Dynamic column widths
   const colWidths = TIER1.map((mgr) => {
     const reports = TIER2_GROUPS[mgr.slug] || []
     const reportWidth = reports.length * NODE_W + Math.max(0, reports.length - 1) * NODE_PAD
     return Math.max(NODE_W, reportWidth)
   })
 
-  // Calculate x positions for each column (cumulative)
   const colX: number[] = []
   let cursor = 0
-  colWidths.forEach((w, i) => {
+  colWidths.forEach((w) => {
     colX.push(cursor)
     cursor += w + GROUP_PAD
   })
   const totalWidth = cursor - GROUP_PAD
 
-  // Row 0: Nova centered
+  // Nova — centered at top
   const novaNode: Node = {
     id: "nova",
-    type: "hub",
+    type: "agent",
     position: { x: totalWidth / 2 - NODE_W / 2, y: 0 },
-    data: { emoji: "✨", label: "Nova", subtitle: "Chief of Staff" },
+    data: {
+      emoji: "✨",
+      name: "Nova",
+      role: "Chief of Staff",
+      tier: "hub",
+      status: "green",
+      model: "claude-opus-4",
+    },
   }
 
-  // Row 1: Tier 1 — centered within their column
+  // Tier 1 — centered in each column
   const tier1Nodes: Node[] = TIER1.map((a, i) => ({
     id: a.slug,
-    type: "system" as const,
-    position: {
-      x: colX[i] + colWidths[i] / 2 - NODE_W / 2,
-      y: ROW_GAP,
-    },
+    type: "agent" as const,
+    position: { x: colX[i] + colWidths[i] / 2 - NODE_W / 2, y: ROW_GAP },
     data: {
-      label: `${a.emoji} ${a.name}`,
-      metrics: [{ label: "Role", value: a.role }],
+      emoji: a.emoji,
+      name: a.name,
+      role: a.role,
+      tier: "tier1" as const,
       status: getStatus(a.slug),
+      model: getModel(a.slug),
     },
   }))
 
-  // Row 2: Tier 2 — spread evenly under their manager's column
+  // Tier 2 — spread under manager columns
   const tier2Nodes: Node[] = []
   TIER1.forEach((mgr, mgrIdx) => {
     const reports = TIER2_GROUPS[mgr.slug] || []
@@ -110,14 +121,13 @@ export function AgentEcosystemDiagram() {
     reports.forEach((a, i) => {
       tier2Nodes.push({
         id: a.slug,
-        type: "system" as const,
-        position: {
-          x: startX + i * (NODE_W + NODE_PAD),
-          y: ROW_GAP * 2,
-        },
+        type: "agent" as const,
+        position: { x: startX + i * (NODE_W + NODE_PAD), y: ROW_GAP * 2 },
         data: {
-          label: `${a.emoji} ${a.name}`,
-          metrics: [{ label: "Role", value: a.role }],
+          emoji: a.emoji,
+          name: a.name,
+          role: a.role,
+          tier: "tier2" as const,
           status: getStatus(a.slug),
         },
       })
